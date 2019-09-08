@@ -1,0 +1,586 @@
+<html>
+<head>
+<title>JStakan</title>
+  <style>
+td {
+  background: #000000; 
+  color: #ffffff;
+  font-family: arial;
+  font-weight: bold;  
+}
+
+td.cell {
+  width:  20;
+  height: 20;
+  font-size: 20px;
+  background: #000000; 
+}
+  </style>
+<script language="JavaScript">
+
+  var st=new Array();
+
+  var cx=2;
+  var cy=0;
+
+  speed=500;
+
+  pause=0;
+
+  color=["black","red","green","yellow","blue","magenta","cyan","white"];
+
+  score=0;
+  localscore=0;
+
+//фигурки
+  fig0=[];
+  fig0[0]=[0,1,0,0];
+  fig0[1]=[0,1,0,0];
+  fig0[2]=[0,1,0,0];
+  fig0[3]=[0,1,0,0];
+
+  fig1=[];
+  fig1[0]=[0,0,0,0];
+  fig1[1]=[0,0,2,0];
+  fig1[2]=[0,2,2,2];
+  fig1[3]=[0,0,0,0];
+
+  fig2=[];
+  fig2[0]=[0,0,0,0];
+  fig2[1]=[0,0,3,3];
+  fig2[2]=[0,3,3,0];
+  fig2[3]=[0,0,0,0];
+
+  fig3=[];
+  fig3[0]=[0,0,0,0];
+  fig3[1]=[0,4,4,0];
+  fig3[2]=[0,0,4,4];
+  fig3[3]=[0,0,0,0];
+
+  fig4=[];
+  fig4[0]=[0,0,0,0];
+  fig4[1]=[0,5,5,0];
+  fig4[2]=[0,5,5,0];
+  fig4[3]=[0,0,0,0];
+
+  fig5=[];
+  fig5[0]=[0,0,0,0];
+  fig5[1]=[0,6,6,0];
+  fig5[2]=[0,6,0,0];
+  fig5[3]=[0,6,0,0];
+
+  fig6=[];
+  fig6[0]=[0,0,0,0];
+  fig6[1]=[0,7,7,0];
+  fig6[2]=[0,0,7,0];
+  fig6[3]=[0,0,7,0];
+
+  figx=[];
+  figx[0]=[];
+  figx[1]=[];
+  figx[2]=[];
+  figx[3]=[];
+
+  fig=fig1;
+  next=Math.round(Math.random()*6);
+  fignext=eval("fig"+next);
+  
+  function clear() {
+    for (j=0;j<20;j++) {
+      for (i=0;i<10;i++) { 
+        st[j][i]=0;
+      }
+    }
+  }
+
+  function init() {
+    document.onkeypress=keypress;
+//создаем массив под стакан
+    for (j=0;j<20;j++)  
+      if(st[j]==null)
+        st[j]=new Array();
+  clear();    
+//выводим "следующую" фигурку
+  for (l=0;l<4;l++) {
+    for (k=0;k<4;k++) {
+      document.getElementById("n"+l+k).style.background=color[fignext[l][k]]; 
+    }
+  }
+//Запускаем перерисовку и падение фигурок
+    redraw();
+    falling();
+  }
+
+  function check(x,y,f)
+  {
+    flag=0;
+    for (j=0;j<4;j++) {
+      for (i=0;i<4;i++) {
+        if (f[j][i]) {
+          if (j+y<0 || j+y>19 || i+x>9 || st[j+y][i+x]!=0) {
+            flag=1;
+          }
+        }
+      }
+    }
+    return(flag);
+  }
+
+//убирать строчки
+  function scroll(a) {
+    for (j=a;j>1;j--) {
+      for (i=0;i<10;i++) { 
+        st[j][i]=st[j-1][i];
+      }
+    }    
+  }
+
+  function fix()
+  {
+    for (j=0;j<4;j++) {
+      for (i=0;i<4;i++) {
+        if (fig[j][i]!=0 && j+cy<20) {
+          st[j+cy][i+cx]=fig[j][i];
+        }
+      }
+    }
+  }
+
+  function falling () {
+    setTimeout('falling()',speed);
+    if (!pause) fall();
+  }
+
+  function fall() {
+    if (check(cx,cy+1,fig)) {
+      fix();
+      cy=0;
+      cx=2;
+      fig=eval("fig"+next);
+      if (check(cx,cy,fig)){
+        alert("Game Over");
+        clear();
+        cx=2;
+        cy=0;
+        speed=500;
+        score=0;
+        localscore=0;
+      }
+      next=Math.round(Math.random()*6);
+      fignext=eval("fig"+next);
+      for (l=0;l<4;l++) {
+        for (k=0;k<4;k++) {
+          document.getElementById("n"+l+k).style.background=color[fignext[k][l]]; 
+        }
+      }
+    }
+    cy++;
+//проверяем заполненность строчки
+  localscore=0;
+    for (j=0;j<20;j++) {
+      flag=0;
+      for (i=0;i<10;i++) {
+        if (st[j][i]==0) {
+          flag=1;
+        }
+      }
+      if (!flag)
+      { 
+        scroll(j);
+        localscore*=2;
+        localscore+=100;
+      }
+    }
+  score+=localscore;
+  speed=500-(score/50);
+  document.getElementById("scor").innerHTML=score;
+  document.getElementById("sped").innerHTML=speed+" ms";
+  }
+
+  function rot() {
+    for (j=0;j<4;j++) {
+      for (i=0;i<4;i++) {
+        figx[j][i]=fig[i][3-j];
+      }
+    }
+    if (!check(cx,cy,figx)) {
+      for (j=0;j<4;j++) {
+        for (i=0;i<4;i++) {
+          fig[i][j]=figx[i][j];
+        }
+      }
+    }
+  }
+
+  function redraw() {
+    setTimeout('redraw()',50);
+
+    for (j=0;j<20;j++) {
+      for (i=0;i<10;i++) {
+          document.getElementById("cl"+j+i).style.background=color[st[j][i]]; 
+      }
+    }
+
+    for (j=0;j<4;j++) {
+      for (i=0;i<4;i++) {
+        if (fig[j][i]!=0) {
+          document.getElementById("cl"+(j+cy)+(i+cx)).style.background=color[fig[j][i]]; 
+        }
+      }
+    }
+  }
+
+  function keypress(e) {
+    if(window.event)
+      key=window.event.keyCode;
+    else
+      key=e.which;
+//    alert(key);
+    switch(key) {
+      case 97:  if (!pause && !check(cx-1,cy,fig)) cx--;
+                break;
+      case 100: if (!pause && !check(cx+1,cy,fig)) cx++;
+                break;
+      case 115: if (!pause) fall();
+                break;
+      case 32:  if (!pause) rot();
+                break;
+//cheat
+      case 76:  next=0;
+      		fignext=eval("fig"+next);
+      		for (l=0;l<4;l++) {
+        	  for (k=0;k<4;k++) {
+          	    document.getElementById("n"+l+k).style.background=color[fignext[k][l]]; 
+        	  }
+      		}
+                break;   
+      case 112: pause=!pause;
+                break;   
+    }
+  }
+</script>
+</head>
+<body onLoad=init();>
+<table border=0 cellspacing=5px sellpadding=5px>
+<tr>
+<td>
+<table border=0 cellspacing=0 cellpadding=0>
+  <tr>
+    <td class=cell id="cl00"></td>
+    <td class=cell id="cl01"></td>
+    <td class=cell id="cl02"></td>
+    <td class=cell id="cl03"></td>
+    <td class=cell id="cl04"></td>
+    <td class=cell id="cl05"></td>
+    <td class=cell id="cl06"></td>
+    <td class=cell id="cl07"></td>
+    <td class=cell id="cl08"></td>
+    <td class=cell id="cl09"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl10"></td>
+    <td class=cell id="cl11"></td>
+    <td class=cell id="cl12"></td>
+    <td class=cell id="cl13"></td>
+    <td class=cell id="cl14"></td>
+    <td class=cell id="cl15"></td>
+    <td class=cell id="cl16"></td>
+    <td class=cell id="cl17"></td>
+    <td class=cell id="cl18"></td>
+    <td class=cell id="cl19"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl20"></td>
+    <td class=cell id="cl21"></td>
+    <td class=cell id="cl22"></td>
+    <td class=cell id="cl23"></td>
+    <td class=cell id="cl24"></td>
+    <td class=cell id="cl25"></td>
+    <td class=cell id="cl26"></td>
+    <td class=cell id="cl27"></td>
+    <td class=cell id="cl28"></td>
+    <td class=cell id="cl29"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl30"></td>
+    <td class=cell id="cl31"></td>
+    <td class=cell id="cl32"></td>
+    <td class=cell id="cl33"></td>
+    <td class=cell id="cl34"></td>
+    <td class=cell id="cl35"></td>
+    <td class=cell id="cl36"></td>
+    <td class=cell id="cl37"></td>
+    <td class=cell id="cl38"></td>
+    <td class=cell id="cl39"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl40"></td>
+    <td class=cell id="cl41"></td>
+    <td class=cell id="cl42"></td>
+    <td class=cell id="cl43"></td>
+    <td class=cell id="cl44"></td>
+    <td class=cell id="cl45"></td>
+    <td class=cell id="cl46"></td>
+    <td class=cell id="cl47"></td>
+    <td class=cell id="cl48"></td>
+    <td class=cell id="cl49"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl50"></td>
+    <td class=cell id="cl51"></td>
+    <td class=cell id="cl52"></td>
+    <td class=cell id="cl53"></td>
+    <td class=cell id="cl54"></td>
+    <td class=cell id="cl55"></td>
+    <td class=cell id="cl56"></td>
+    <td class=cell id="cl57"></td>
+    <td class=cell id="cl58"></td>
+    <td class=cell id="cl59"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl60"></td>
+    <td class=cell id="cl61"></td>
+    <td class=cell id="cl62"></td>
+    <td class=cell id="cl63"></td>
+    <td class=cell id="cl64"></td>
+    <td class=cell id="cl65"></td>
+    <td class=cell id="cl66"></td>
+    <td class=cell id="cl67"></td>
+    <td class=cell id="cl68"></td>
+    <td class=cell id="cl69"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl70"></td>
+    <td class=cell id="cl71"></td>
+    <td class=cell id="cl72"></td>
+    <td class=cell id="cl73"></td>
+    <td class=cell id="cl74"></td>
+    <td class=cell id="cl75"></td>
+    <td class=cell id="cl76"></td>
+    <td class=cell id="cl77"></td>
+    <td class=cell id="cl78"></td>
+    <td class=cell id="cl79"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl80"></td>
+    <td class=cell id="cl81"></td>
+    <td class=cell id="cl82"></td>
+    <td class=cell id="cl83"></td>
+    <td class=cell id="cl84"></td>
+    <td class=cell id="cl85"></td>
+    <td class=cell id="cl86"></td>
+    <td class=cell id="cl87"></td>
+    <td class=cell id="cl88"></td>
+    <td class=cell id="cl89"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl90"></td>
+    <td class=cell id="cl91"></td>
+    <td class=cell id="cl92"></td>
+    <td class=cell id="cl93"></td>
+    <td class=cell id="cl94"></td>
+    <td class=cell id="cl95"></td>
+    <td class=cell id="cl96"></td>
+    <td class=cell id="cl97"></td>
+    <td class=cell id="cl98"></td>
+    <td class=cell id="cl99"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl100"></td>
+    <td class=cell id="cl101"></td>
+    <td class=cell id="cl102"></td>
+    <td class=cell id="cl103"></td>
+    <td class=cell id="cl104"></td>
+    <td class=cell id="cl105"></td>
+    <td class=cell id="cl106"></td>
+    <td class=cell id="cl107"></td>
+    <td class=cell id="cl108"></td>
+    <td class=cell id="cl109"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl110"></td>
+    <td class=cell id="cl111"></td>
+    <td class=cell id="cl112"></td>
+    <td class=cell id="cl113"></td>
+    <td class=cell id="cl114"></td>
+    <td class=cell id="cl115"></td>
+    <td class=cell id="cl116"></td>
+    <td class=cell id="cl117"></td>
+    <td class=cell id="cl118"></td>
+    <td class=cell id="cl119"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl120"></td>
+    <td class=cell id="cl121"></td>
+    <td class=cell id="cl122"></td>
+    <td class=cell id="cl123"></td>
+    <td class=cell id="cl124"></td>
+    <td class=cell id="cl125"></td>
+    <td class=cell id="cl126"></td>
+    <td class=cell id="cl127"></td>
+    <td class=cell id="cl128"></td>
+    <td class=cell id="cl129"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl130"></td>
+    <td class=cell id="cl131"></td>
+    <td class=cell id="cl132"></td>
+    <td class=cell id="cl133"></td>
+    <td class=cell id="cl134"></td>
+    <td class=cell id="cl135"></td>
+    <td class=cell id="cl136"></td>
+    <td class=cell id="cl137"></td>
+    <td class=cell id="cl138"></td>
+    <td class=cell id="cl139"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl140"></td>
+    <td class=cell id="cl141"></td>
+    <td class=cell id="cl142"></td>
+    <td class=cell id="cl143"></td>
+    <td class=cell id="cl144"></td>
+    <td class=cell id="cl145"></td>
+    <td class=cell id="cl146"></td>
+    <td class=cell id="cl147"></td>
+    <td class=cell id="cl148"></td>
+    <td class=cell id="cl149"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl150"></td>
+    <td class=cell id="cl151"></td>
+    <td class=cell id="cl152"></td>
+    <td class=cell id="cl153"></td>
+    <td class=cell id="cl154"></td>
+    <td class=cell id="cl155"></td>
+    <td class=cell id="cl156"></td>
+    <td class=cell id="cl157"></td>
+    <td class=cell id="cl158"></td>
+    <td class=cell id="cl159"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl160"></td>
+    <td class=cell id="cl161"></td>
+    <td class=cell id="cl162"></td>
+    <td class=cell id="cl163"></td>
+    <td class=cell id="cl164"></td>
+    <td class=cell id="cl165"></td>
+    <td class=cell id="cl166"></td>
+    <td class=cell id="cl167"></td>
+    <td class=cell id="cl168"></td>
+    <td class=cell id="cl169"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl170"></td>
+    <td class=cell id="cl171"></td>
+    <td class=cell id="cl172"></td>
+    <td class=cell id="cl173"></td>
+    <td class=cell id="cl174"></td>
+    <td class=cell id="cl175"></td>
+    <td class=cell id="cl176"></td>
+    <td class=cell id="cl177"></td>
+    <td class=cell id="cl178"></td>
+    <td class=cell id="cl179"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl180"></td>
+    <td class=cell id="cl181"></td>
+    <td class=cell id="cl182"></td>
+    <td class=cell id="cl183"></td>
+    <td class=cell id="cl184"></td>
+    <td class=cell id="cl185"></td>
+    <td class=cell id="cl186"></td>
+    <td class=cell id="cl187"></td>
+    <td class=cell id="cl188"></td>
+    <td class=cell id="cl189"></td>
+  </tr>
+  <tr>
+    <td class=cell id="cl190"></td>
+    <td class=cell id="cl191"></td>
+    <td class=cell id="cl192"></td>
+    <td class=cell id="cl193"></td>
+    <td class=cell id="cl194"></td>
+    <td class=cell id="cl195"></td>
+    <td class=cell id="cl196"></td>
+    <td class=cell id="cl197"></td>
+    <td class=cell id="cl198"></td>
+    <td class=cell id="cl199"></td>
+  </tr>
+</table>
+</td>
+<td>
+<table border=0 height=100% width=100%>
+  <tr height=20px>
+    <td>
+     Score:
+    </td>
+  </tr >
+  <tr height=20px>
+    <td id=scor>
+     0
+    </td>
+  </tr>
+  <tr height=20px>
+    <td>
+     Speed:
+    </td>
+  </tr >
+  <tr height=20px>
+    <td id=sped>
+     0
+    </td>
+  </tr>
+  <tr height=20px>
+    <td>
+     Next:
+    </td>
+  </tr >
+  <tr height=20px>
+    <td id=scor>
+  <table border=0 cellspacing=0 cellpadding=0>
+  <tr>
+    <td class=cell id="n00"></td>
+    <td class=cell id="n10"></td>
+    <td class=cell id="n20"></td>
+    <td class=cell id="n30"></td>
+  </tr>
+  <tr>
+    <td class=cell id="n01"></td>
+    <td class=cell id="n11"></td>
+    <td class=cell id="n21"></td>
+    <td class=cell id="n31"></td>
+  </tr>
+  <tr>
+    <td class=cell id="n02"></td>
+    <td class=cell id="n12"></td>
+    <td class=cell id="n22"></td>
+    <td class=cell id="n32"></td>
+  </tr>
+  <tr>
+    <td class=cell id="n03"></td>
+    <td class=cell id="n13"></td>
+    <td class=cell id="n23"></td>
+    <td class=cell id="n33"></td>
+  </tr>
+</table>
+    </td>
+  </tr>
+  <tr height=80%>
+    <td>
+    </td>
+  </tr>
+</table>
+</td>
+</tr>
+<tr>
+<td colspan=2>
+Controls:<br>
+[A] - left<br>
+[D] - right<br>
+[S] - down<br>
+[P] - pause<br>
+[Space] - rotate
+</td>
+</tr>
+</table>
+</body>
+</html>
