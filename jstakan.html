@@ -32,7 +32,7 @@ td.cell {
   score=0;
   localscore=0;
 
-//фигурки
+//blocks
   fig0=[];
   fig0[0]=[0,1,0,0];
   fig0[1]=[0,1,0,0];
@@ -95,18 +95,18 @@ td.cell {
 
   function init() {
     document.onkeypress=keypress;
-//создаем массив под стакан
+//createС‹ an array for the glass
     for (j=0;j<20;j++)  
       if(st[j]==null)
         st[j]=new Array();
   clear();    
-//выводим "следующую" фигурку
+//shows "next" block
   for (l=0;l<4;l++) {
     for (k=0;k<4;k++) {
       document.getElementById("n"+l+k).style.background=color[fignext[l][k]]; 
     }
   }
-//Запускаем перерисовку и падение фигурок
+//blocks rendering and falling
     redraw();
     falling();
   }
@@ -126,7 +126,7 @@ td.cell {
     return(flag);
   }
 
-//убирать строчки
+//removes lines
   function scroll(a) {
     for (j=a;j>1;j--) {
       for (i=0;i<10;i++) { 
@@ -175,7 +175,7 @@ td.cell {
       }
     }
     cy++;
-//проверяем заполненность строчки
+//checks line fullness
   localscore=0;
     for (j=0;j<20;j++) {
       flag=0;
